@@ -1,0 +1,63 @@
+﻿@model EMiningLicense.Models.LoginVm
+@{
+    ViewBag.Title = "Login - E-Mining License Platform";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0"><i class="fas fa-sign-in-alt"></i> Login to Your Account</h4>
+                </div>
+                <div class="card-body p-4">
+                    @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        @if (ViewBag.ErrorMessage != null)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i> @ViewBag.ErrorMessage
+                            </div>
+                        }
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Email, new { @class = "form-label fw-bold" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", required = "required", placeholder = "Enter your email" })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Password, new { @class = "form-label fw-bold" })
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", required = "required", placeholder = "Enter your password" })
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-check mb-3">
+                            @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-check-input" })
+                            @Html.LabelFor(m => m.RememberMe, new { @class = "form-check-label" })
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            @Html.ActionLink("Forgot Password?", "ForgotPassword", "Account", null, new { @class = "text-muted" })
+                        </div>
+                    }
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <p class="mb-0">
+                        Don't have an account?
+                        @Html.ActionLink("Register here", "Register", "Account", null, new { @class = "text-success fw-bold" })
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
