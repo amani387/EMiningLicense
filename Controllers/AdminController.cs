@@ -45,8 +45,8 @@ namespace EMiningLicense.Controllers
                 Email = vm.Email,
                 FullName = vm.FullName,
                 EmailConfirmed = true,
-                IsApprovedByAdmin = true,   // since admin is creating
-                IsVerifiedByOtp = true      // staff doesn’t need OTP
+                IsApprovedByAdmin = true,   
+                IsVerifiedByOtp = true     
             };
 
             var result = await _userManager.CreateAsync(user, vm.Password);

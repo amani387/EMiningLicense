@@ -1,0 +1,96 @@
+﻿@model EMiningLicense.Models.EditProfileVm
+@{
+    ViewBag.Title = "My Profile - Staff";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="text-success mb-4"><i class="fas fa-user-cog"></i> My Profile</h2>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-success">@TempData["msg"]</div>
+    }
+    @if (TempData["pwdMsg"] != null)
+    {
+        <div class="alert alert-success">@TempData["pwdMsg"]</div>
+    }
+    @if (TempData["pwdError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["pwdError"]</div>
+    }
+
+    <div class="row">
+        <!-- Profile Update -->
+        <div class="col-md-6">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-edit"></i> Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Profile" method="post">
+                        <div class="form-group mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Phone" class="form-label"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Organization" class="form-label"></label>
+                            <input asp-for="Organization" class="form-control" />
+                            <span asp-validation-for="Organization" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-key"></i> Change Password</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ChangePassword" method="post">
+                        <div class="form-group mb-3">
+                            <label for="CurrentPassword">Current Password</label>
+                            <input type="password" name="CurrentPassword" class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="NewPassword">New Password</label>
+                            <input type="password" name="NewPassword" class="form-control" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="ConfirmPassword">Confirm New Password</label>
+                            <input type="password" name="ConfirmPassword" class="form-control" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-lock"></i> Update Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
