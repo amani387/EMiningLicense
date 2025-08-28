@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\EmailService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DevExtreme.AspNet.Data" Version="5.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
@@ -17,7 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\ApplicationUser\" />
     <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Controllers\EmailService.cs" />
   </ItemGroup>
 
 </Project>

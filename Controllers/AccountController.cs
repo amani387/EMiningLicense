@@ -86,7 +86,8 @@ namespace EMiningLicense.Controllers
                 await _userMgr.UpdateAsync(user);
 
                 // Now wait for admin approval
-                return RedirectToAction(nameof(PendingApproval));
+                
+                     return RedirectToAction(nameof(Login));
             }
 
             ModelState.AddModelError("", "Invalid or expired OTP code.");

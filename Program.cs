@@ -35,6 +35,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 // ? Seed DB on startup
+builder.Services.AddTransient<EmailService>();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
