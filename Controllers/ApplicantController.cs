@@ -8,59 +8,100 @@ using Microsoft.EntityFrameworkCore;
 [Authorize(Roles = "Applicant")]
 public class ApplicantController : Controller
 {
-    private readonly AppDbContext _db;
+    private readonly AppDbContext _context;
     private readonly UserManager<ApplicationUser> _userMgr;
+    private readonly IWebHostEnvironment _env;
 
-    public ApplicantController(AppDbContext db, UserManager<ApplicationUser> userMgr)
+    public ApplicantController(AppDbContext context, UserManager<ApplicationUser> userMgr, IWebHostEnvironment env)
     {
-        _db = db;
+        _context = context;
         _userMgr = userMgr;
+        _env = env;
     }
 
-    // GET: My Applications
+    // ✅ List all applications for logged-in applicant
     public async Task<IActionResult> Index()
     {
         var user = await _userMgr.GetUserAsync(User);
-        var apps = await _db.LicenseApplications
+        var apps = await _context.LicenseApplications
             .Where(a => a.ApplicantId == user.Id)
+            .OrderByDescending(a => a.SubmittedAt)
             .ToListAsync();
 
         return View(apps);
     }
 
-    // GET: Apply form
+    // ✅ GET: New Application Form
     [HttpGet]
     public IActionResult Apply()
     {
-        return View(new LicenseApplication());
+        return View();
     }
 
-    // POST: Submit new application
+    // ✅ POST: Save New Application
     [HttpPost]
-    public async Task<IActionResult> Apply(LicenseApplication model)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Apply(LicenseApplication model, IFormFile document)
     {
-        if (!ModelState.IsValid) return View(model);
-
         var user = await _userMgr.GetUserAsync(User);
-        model.ApplicantId = user.Id;
-        model.SubmittedAt = DateTime.UtcNow;
-        model.Status = "Pending";
+        if (user == null) return Unauthorized();
 
-        _db.LicenseApplications.Add(model);
-        await _db.SaveChangesAsync();
+        if (!ModelState.IsValid)
+            return View(model);
 
-        TempData["msg"] = "✅ Application submitted successfully!";
-        return RedirectToAction("Index");
+        // Save document
+        string? docPath = null;
+        if (document != null && document.Length > 0)
+        {
+            var uploads = Path.Combine(_env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploads))
+                Directory.CreateDirectory(uploads);
+
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(document.FileName)}";
+            var filePath = Path.Combine(uploads, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await document.CopyToAsync(stream);
+            }
+
+            docPath = "/uploads/" + fileName; // store relative path for later retrieval
+        }
+
+        var application = new LicenseApplication
+        {
+            ApplicantId = user.Id,
+            CompanyName = model.CompanyName,
+            ContactPerson = model.ContactPerson,
+            ContactEmail = model.ContactEmail,
+            ContactPhone = model.ContactPhone,
+            MiningType = model.MiningType,
+            StartDate = model.StartDate,
+            EndDate = model.EndDate,
+            Latitude = model.Latitude,
+            Longitude = model.Longitude,
+            DocumentPath = docPath,
+            AdditionalNotes = model.AdditionalNotes,
+            Status = "Pending",
+            SubmittedAt = DateTime.UtcNow
+        };
+
+        _context.LicenseApplications.Add(application);
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = "Your application has been submitted successfully!";
+        return RedirectToAction(nameof(Index));
     }
 
-    // GET: View application details
+    // ✅ View details of a single application
     public async Task<IActionResult> Details(int id)
     {
-        var app = await _db.LicenseApplications
-            .Include(a => a.Applicant)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var user = await _userMgr.GetUserAsync(User);
+        var app = await _context.LicenseApplications
+            .FirstOrDefaultAsync(a => a.Id == id && a.ApplicantId == user.Id);
 
         if (app == null) return NotFound();
+
         return View(app);
     }
 }
