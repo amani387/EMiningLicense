@@ -1,0 +1,27 @@
+﻿@model EMiningLicense.Models.LicenseApplication
+@{
+    ViewBag.Title = "New Application";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-plus-circle"></i> New Application</h2>
+    <form asp-action="Apply" method="post">
+        <div class="mb-3">
+            <label asp-for="ApplicationType" class="form-label"></label>
+            <input asp-for="ApplicationType" class="form-control" placeholder="e.g. Gold Mining License" />
+            <span asp-validation-for="ApplicationType" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> Submit Application
+        </button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

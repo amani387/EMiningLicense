@@ -1,38 +1,56 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Configuration;
+using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
-public class EmailService
+namespace EMiningLicense.Services
 {
-    private readonly IConfiguration _config;
-
-    public EmailService(IConfiguration config)
+    public class EmailService
     {
-        _config = config;
-    }
+        private readonly IConfiguration _config;
 
-    public async Task SendEmailAsync(string toEmail, string subject, string body)
-    {
-        var smtp = new SmtpClient
+        public EmailService(IConfiguration config)
         {
-            Host = _config["Smtp:Host"],       // e.g., smtp.gmail.com
-            Port = int.Parse(_config["Smtp:Port"]),
-            EnableSsl = true,
-            Credentials = new NetworkCredential(
-                _config["Smtp:Username"],
-                _config["Smtp:Password"])
-        };
+            _config = config;
+        }
 
-        var mail = new MailMessage
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            From = new MailAddress(_config["Smtp:From"]),
-            Subject = subject,
-            Body = body,
-            IsBodyHtml = true
-        };
+            try
+            {
+                var settings = _config.GetSection("EmailSettings");
 
-        mail.To.Add(toEmail);
+                var fromEmail = settings["FromEmail"];
+                var fromPassword = settings["Password"];
+                var host = settings["Host"];
+                var port = int.Parse(settings["Port"]);
+                var enableSsl = bool.Parse(settings["EnableSsl"]);
 
-        await smtp.SendMailAsync(mail);
+                using var client = new SmtpClient(host, port)
+                {
+                    EnableSsl = enableSsl,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromEmail, fromPassword)
+                };
+
+                using var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(fromEmail, settings["FromName"]),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
+
+                mailMessage.To.Add(toEmail);
+
+                await client.SendMailAsync(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Email sending failed: " + ex.Message);
+                throw; // bubble up to AccountController
+            }
+        }
+
     }
 }

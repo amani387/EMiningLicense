@@ -1,5 +1,6 @@
 ﻿using EMiningLicense.Data;
 using EMiningLicense.Models;
+using EMiningLicense.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,7 @@ namespace EMiningLicense.Controllers
 
             await _emailService.SendEmailAsync(email, subject, body);
         }
+   
         [HttpGet]
         public IActionResult CreateStaff() => View();
 
@@ -74,33 +76,55 @@ namespace EMiningLicense.Controllers
             TempData["msg"] = "✅ Staff account created successfully!";
             return RedirectToAction("CreateStaff"); // back to form so admin can add more
         }
-
         [HttpPost]
-        public async Task<IActionResult> ApproveUser(string id, [FromServices] EmailService emailService)
+        public async Task<IActionResult> ApproveUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            // Approve the user
             user.IsApprovedByAdmin = true;
-
-            // Generate OTP
-            var otp = new Random().Next(100000, 999999).ToString();
-            user.OtpCode = otp;
-            user.OtpExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10);
-
             await _userManager.UpdateAsync(user);
 
-            // Send OTP via email
-            await emailService.SendEmailAsync(
+            // Send email notification
+            await _emailService.SendEmailAsync(
                 user.Email,
-                "E-Mining License Platform - Account Verification",
-                $"<p>Hello {user.FullName},</p><p>Your OTP code is: <b>{otp}</b></p><p>It will expire in 10 minutes.</p>"
+                "✅ Your account has been approved",
+                $"Hello {user.FullName},<br/><br/>" +
+                "Your account has been <b>approved by the administrator</b>. " +
+                "You can now log in using your email and password.<br/><br/>" +
+                "Best regards,<br/>Mining License System"
             );
 
-            TempData["msg"] = $"✅ {user.FullName} has been approved and OTP sent.";
+            TempData["msg"] = $"✅ {user.Email} approved successfully.";
             return RedirectToAction("Dashboard");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var email = user.Email;
+            var fullName = user.FullName;
+
+            await _userManager.DeleteAsync(user);
+
+            // Send rejection email
+            await _emailService.SendEmailAsync(
+                email,
+                "❌ Your registration request was rejected",
+                $"Hello {fullName},<br/><br/>" +
+                "We’re sorry to inform you that your account registration request " +
+                "has been <b>rejected</b> by the administrator.<br/><br/>" +
+                "If you believe this is a mistake, please contact support.<br/><br/>" +
+                "Best regards,<br/>Mining License System"
+            );
+
+            TempData["msg"] = $"❌ {email} rejected.";
+            return RedirectToAction("Dashboard");
+        }
+
 
         public async Task<IActionResult> Dashboard()
         {
@@ -112,16 +136,17 @@ namespace EMiningLicense.Controllers
 
             // Pending Users
             var pendingUsers = await _context.Users
-                .Where(u => !u.IsApprovedByAdmin && u.IsVerifiedByOtp)
-                .Select(u => new PendingUserVm
-                {
-                    Id = u.Id,
-                    FullName = u.FullName,
-                    Email = u.Email,
-                    OrganizationName = u.Organization ?? "",
-                    RegistrationDate = u.LockoutEnd != null ? u.LockoutEnd.Value.UtcDateTime : DateTime.UtcNow
-                })
-                .ToListAsync();
+      .Where(u => u.IsVerifiedByOtp && !u.IsApprovedByAdmin)
+      .Select(u => new PendingUserVm
+      {
+          Id = u.Id,
+          FullName = u.FullName,
+          Email = u.Email,
+          OrganizationName = u.Organization ?? "",
+          RegistrationDate = u.CreatedAt
+      })
+      .ToListAsync();
+
 
             // Dummy system activities for now
             var activities = new List<SystemActivityVm>
@@ -144,38 +169,7 @@ namespace EMiningLicense.Controllers
             return View(vm);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ApproveUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
-            // Mark as approved
-            user.IsApprovedByAdmin = true;
-
-            // Generate OTP
-            var otp = new Random().Next(100000, 999999).ToString();
-            user.OtpCode = otp;
-            user.OtpExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10);
-
-            await _userManager.UpdateAsync(user);
-
-            // Send OTP via email
-            await SendOtpEmailAsync(user.Email!, otp);
-
-            TempData["msg"] = $"✅ User approved successfully. OTP sent to {user.Email}";
-            return RedirectToAction("Dashboard");
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RejectUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
-            await _userManager.DeleteAsync(user);
-            return RedirectToAction("Dashboard");
-        }
+   
 
         public async Task<IActionResult> UserDetails(string id)
         {

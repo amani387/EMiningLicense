@@ -5,49 +5,62 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace EMiningLicense.Controllers
+[Authorize(Roles = "Applicant")]
+public class ApplicantController : Controller
 {
-    [Authorize(Roles = "Applicant")]
-    public class ApplicantController : Controller
+    private readonly AppDbContext _db;
+    private readonly UserManager<ApplicationUser> _userMgr;
+
+    public ApplicantController(AppDbContext db, UserManager<ApplicationUser> userMgr)
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<ApplicationUser> _userMgr;
+        _db = db;
+        _userMgr = userMgr;
+    }
 
-        public ApplicantController(AppDbContext context, UserManager<ApplicationUser> userMgr)
-        {
-            _context = context;
-            _userMgr = userMgr;
-        }
+    // GET: My Applications
+    public async Task<IActionResult> Index()
+    {
+        var user = await _userMgr.GetUserAsync(User);
+        var apps = await _db.LicenseApplications
+            .Where(a => a.ApplicantId == user.Id)
+            .ToListAsync();
 
-        public async Task<IActionResult> Index()
-        {
-            var user = await _userMgr.GetUserAsync(User);
+        return View(apps);
+    }
 
-            var apps = await _context.LicenseApplications
-                .Where(a => a.ApplicantId == user.Id)
-                .ToListAsync();
+    // GET: Apply form
+    [HttpGet]
+    public IActionResult Apply()
+    {
+        return View(new LicenseApplication());
+    }
 
-            return View(apps);
-        }
+    // POST: Submit new application
+    [HttpPost]
+    public async Task<IActionResult> Apply(LicenseApplication model)
+    {
+        if (!ModelState.IsValid) return View(model);
 
-        [HttpGet]
-        public IActionResult Apply()
-        {
-            return View();
-        }
+        var user = await _userMgr.GetUserAsync(User);
+        model.ApplicantId = user.Id;
+        model.SubmittedAt = DateTime.UtcNow;
+        model.Status = "Pending";
 
-        [HttpPost]
-        public async Task<IActionResult> Apply(LicenseApplication app)
-        {
-            var user = await _userMgr.GetUserAsync(User);
-            app.ApplicantId = user.Id;
-            app.Status = "Pending";
-            app.SubmittedAt = DateTime.Now;
+        _db.LicenseApplications.Add(model);
+        await _db.SaveChangesAsync();
 
-            _context.LicenseApplications.Add(app);
-            await _context.SaveChangesAsync();
+        TempData["msg"] = "✅ Application submitted successfully!";
+        return RedirectToAction("Index");
+    }
 
-            return RedirectToAction(nameof(Index));
-        }
+    // GET: View application details
+    public async Task<IActionResult> Details(int id)
+    {
+        var app = await _db.LicenseApplications
+            .Include(a => a.Applicant)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (app == null) return NotFound();
+        return View(app);
     }
 }

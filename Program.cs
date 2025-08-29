@@ -1,5 +1,6 @@
 using EMiningLicense.Data;
 using EMiningLicense.Models;
+using EMiningLicense.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,10 +33,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging()
            .LogTo(Console.WriteLine, LogLevel.Information));
-
+builder.Services.AddScoped<EmailService>();
 var app = builder.Build();
 // ? Seed DB on startup
-builder.Services.AddTransient<EmailService>();
+
 
 using (var scope = app.Services.CreateScope())
 {

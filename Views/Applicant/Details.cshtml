@@ -1,0 +1,30 @@
+﻿@model EMiningLicense.Models.LicenseApplication
+@{
+    ViewBag.Title = "Application Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-info-circle"></i> Application Details</h2>
+
+    <dl class="row">
+        <dt class="col-sm-3">Application Type</dt>
+        <dd class="col-sm-9">@Model.ApplicationType</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">
+            <span class="badge bg-@(Model.Status == "Approved" ? "success" :
+                                                     Model.Status == "Rejected" ? "danger" : "warning")">
+                @Model.Status
+            </span>
+        </dd>
+
+        <dt class="col-sm-3">Submitted At</dt>
+        <dd class="col-sm-9">@Model.SubmittedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+    </dl>
+
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Back to My Applications</a>
+</div>
