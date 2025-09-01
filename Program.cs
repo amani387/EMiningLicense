@@ -105,23 +105,23 @@ using (var scope = app.Services.CreateScope())
     foreach (var r in roles)
         if (!await roleMgr.RoleExistsAsync(r)) await roleMgr.CreateAsync(new IdentityRole(r));
 
-    // Seed an admin if none
-    var adminEmail = "admin@mining.gov";
-    var admin = await userMgr.FindByEmailAsync(adminEmail);
-    if (admin == null)
-    {
-        admin = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            FullName = "System Administrator",
-            EmailConfirmed = true,
-            IsApprovedByAdmin = true,
-            IsVerifiedByOtp = true
-        };
-        await userMgr.CreateAsync(admin, "ChangeThis!123");
-        await userMgr.AddToRoleAsync(admin, "Admin");
-    }
+    //// Seed an admin if none
+    //var adminEmail = "admin@mining.gov";
+    //var admin = await userMgr.FindByEmailAsync(adminEmail);
+    //if (admin == null)
+    //{
+    //    admin = new ApplicationUser
+    //    {
+    //        UserName = adminEmail,
+    //        Email = adminEmail,
+    //        FullName = "System Administrator",
+    //        EmailConfirmed = true,
+    //        IsApprovedByAdmin = true,
+    //        IsVerifiedByOtp = true
+    //    };
+    //    await userMgr.CreateAsync(admin, "ChangeThis!123");
+    //    await userMgr.AddToRoleAsync(admin, "Admin");
+    //}
 }
 
 if (!app.Environment.IsDevelopment())
