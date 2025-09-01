@@ -5,6 +5,7 @@ namespace EMiningLicense.Models
     public class LicenseApplication
     {
         public int Id { get; set; }
+        public string AssignedStaffId { get; set; }
         public string ApplicationType { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         // Applicant linkage
@@ -18,7 +19,7 @@ namespace EMiningLicense.Models
         public string ContactPhone { get; set; }
 
         // Mining Activity
-        public string MiningType { get; set; }   // e.g. Gold, Coal, Quarry
+        public string MiningType { get; set; }   
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
@@ -27,11 +28,11 @@ namespace EMiningLicense.Models
         public double Longitude { get; set; }
 
         // Uploaded Docs
-        public string DocumentPath { get; set; } // store filename or path
+        public string DocumentPath { get; set; } 
         public string AdditionalNotes { get; set; }
 
         // Status & Timestamps
-        public string Status { get; set; } = "Pending"; // Pending/Approved/Rejected
+        public string Status { get; set; } = "Pending"; 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
         public bool IsRenewal { get; set; } = false;
     }

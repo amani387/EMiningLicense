@@ -1,7 +1,9 @@
-﻿using EMiningLicense.Models;
+﻿using EMiningLicense.Data;
+using EMiningLicense.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EMiningLicense.Controllers
 {
@@ -9,31 +11,65 @@ namespace EMiningLicense.Controllers
     public class StaffController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public StaffController(UserManager<ApplicationUser> userManager)
+        private readonly AppDbContext _context;
+        public StaffController(AppDbContext context,UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var newApps = await _context.LicenseApplications
+       .Where(a => a.Status == "Pending")
+       .Select(a => new LicenseApplicationVm
+       {
+           Id = a.Id,
+           ApplicantName = a.ContactPerson,
+           CompanyName = a.CompanyName,
+           LicenseType = a.MiningType,
+           SubmittedAt = a.SubmittedAt,
+           Status = a.Status,
+           Latitude = a.Latitude,
+           Longitude = a.Longitude,
+           DocumentPath = a.DocumentPath
+       })
+       .ToListAsync();
+            // fetch "assigned applications"
+            var assignedApps = await _context.LicenseApplications
+                .Where(a => a.Status == "Assigned")
+                .Select(a => new AssignedApplicationVm
+                {
+                    Id = a.Id,
+                    ApplicantName = a.ContactPerson,
+                    CompanyName = a.CompanyName,
+                    LicenseType = a.MiningType,
+                    SubmittedAt = a.SubmittedAt,
+                    Status = a.Status,
+                    Latitude = a.Latitude,
+                    Longitude = a.Longitude,
+                    DocumentPath = a.DocumentPath
+                })
+                .ToListAsync();
+
+            // Fetch assigned apps for the current staff
+            var user = await _userManager.GetUserAsync(User);
+
             var vm = new StaffDashboardVm
             {
-                AssignedApplications = new List<StaffApplicationVm>
-                {
-                    new StaffApplicationVm { Id = 1, ApplicantName = "John Doe", LicenseType = "Gold Mining", Status = "Pending Review", SubmittedAt = DateTime.Now.AddDays(-2) },
-                    new StaffApplicationVm { Id = 2, ApplicantName = "Jane Smith", LicenseType = "Exploration License", Status = "Approved", SubmittedAt = DateTime.Now.AddDays(-7) }
-                },
                 Notifications = new List<string>
-                {
-                    "2 applications pending review.",
-                    "System maintenance scheduled for tomorrow 9:00 AM."
-                }
+        {
+            "📢 Welcome to your staff dashboard!"
+        },
+                NewApplications = newApps,
+                AssignedApplications = assignedApps
             };
+       
 
             return View(vm);
         }
+
         [HttpGet]
         public async Task<IActionResult> Profile()
         {

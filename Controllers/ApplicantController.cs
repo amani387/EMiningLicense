@@ -38,16 +38,14 @@ public class ApplicantController : Controller
         return View();
     }
 
-    // ✅ POST: Save New Application
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Apply(LicenseApplication model, IFormFile document)
+    public async Task<IActionResult> Apply(LicenseApplicationViewModel model, IFormFile document)
     {
         var user = await _userMgr.GetUserAsync(User);
         if (user == null) return Unauthorized();
 
         if (!ModelState.IsValid)
-            return View(model);
+            return View(model); // ✅ now matches ViewModel
 
         // Save document
         string? docPath = null;
@@ -65,9 +63,10 @@ public class ApplicantController : Controller
                 await document.CopyToAsync(stream);
             }
 
-            docPath = "/uploads/" + fileName; // store relative path for later retrieval
+            docPath = "/uploads/" + fileName;
         }
 
+        // Map ViewModel → Entity
         var application = new LicenseApplication
         {
             ApplicantId = user.Id,

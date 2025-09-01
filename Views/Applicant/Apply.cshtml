@@ -1,73 +1,69 @@
-﻿@model EMiningLicense.Models.LicenseApplication
+﻿@model EMiningLicense.Models.LicenseApplicationViewModel
+
 @{
     ViewBag.Title = "New License Application";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-4">
-    <h2><i class="fas fa-plus-circle"></i> New License Application</h2>
-    <form asp-action="Apply" method="post" enctype="multipart/form-data">
+    <h2>New License Application</h2>
 
-        <!-- Company Info -->
+    <form asp-action="Apply" enctype="multipart/form-data" method="post">
         <div class="mb-3">
             <label asp-for="CompanyName" class="form-label"></label>
-            <input asp-for="CompanyName" class="form-control" required />
+            <input asp-for="CompanyName" class="form-control" />
+            <span asp-validation-for="CompanyName" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
             <label asp-for="ContactPerson" class="form-label"></label>
-            <input asp-for="ContactPerson" class="form-control" required />
+            <input asp-for="ContactPerson" class="form-control" />
+            <span asp-validation-for="ContactPerson" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
             <label asp-for="ContactEmail" class="form-label"></label>
-            <input asp-for="ContactEmail" class="form-control" type="email" required />
+            <input asp-for="ContactEmail" class="form-control" />
+            <span asp-validation-for="ContactEmail" class="text-danger"></span>
         </div>
+
         <div class="mb-3">
             <label asp-for="ContactPhone" class="form-label"></label>
-            <input asp-for="ContactPhone" class="form-control" required />
+            <input asp-for="ContactPhone" class="form-control" />
+            <span asp-validation-for="ContactPhone" class="text-danger"></span>
         </div>
 
-        <!-- Mining Info -->
         <div class="mb-3">
             <label asp-for="MiningType" class="form-label"></label>
-            <select asp-for="MiningType" class="form-control">
-                <option>Gold</option>
-                <option>Coal</option>
-                <option>Quarry</option>
-                <option>Other</option>
-            </select>
-        </div>
-        <div class="row mb-3">
-            <div class="col">
-                <label asp-for="StartDate" class="form-label"></label>
-                <input asp-for="StartDate" type="date" class="form-control" />
-            </div>
-            <div class="col">
-                <label asp-for="EndDate" class="form-label"></label>
-                <input asp-for="EndDate" type="date" class="form-control" />
-            </div>
+            <input asp-for="MiningType" class="form-control" />
+            <span asp-validation-for="MiningType" class="text-danger"></span>
         </div>
 
-        <!-- GIS Location -->
         <div class="mb-3">
-            <label>Location</label>
-            <div id="map" style="height: 300px;"></div>
-            <input type="hidden" asp-for="Latitude" id="Latitude" />
-            <input type="hidden" asp-for="Longitude" id="Longitude" />
+            <label asp-for="StartDate" class="form-label"></label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
         </div>
 
-        <!-- Upload Docs -->
         <div class="mb-3">
-            <label class="form-label">Supporting Documents (PDF/JPG/PNG)</label>
-            <input type="file" name="document" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required />
+            <label asp-for="EndDate" class="form-label"></label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-success">
-            <i class="fas fa-paper-plane"></i> Submit Application
-        </button>
-        <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+        <div class="mb-3">
+            <label for="document" class="form-label">Supporting Document</label>
+            <input type="file" name="document" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AdditionalNotes" class="form-label"></label>
+            <textarea asp-for="AdditionalNotes" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Submit Application</button>
     </form>
 </div>
-
 @section Scripts {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
